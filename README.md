@@ -319,12 +319,52 @@ Preencha todas as seções de forma clara e objetiva.
 Descreva, em palavras, a arquitetura da **CNN** implementada no arquivo
 `train_model.py`.
 
+#### Camada de entrada e primira convolucional
+Imagens de 28×28 pixels com 1 canal (escala de cinza), como as do MNIST.
+```python
+ layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+```
 
+#### Primeiro bloco convolucional
+Camada Conv2D de 32 filtros de tamanho 3×3 e ativação ReLU, junto a uma cama de MaxPooling2D com janela 2×2: reduzindo pela metade (14x14), mantendo as características mais fortes.
+```python
+ layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+layers.MaxPooling2D((2, 2)),
+```
+
+#### Segundo bloco convolucional
+
+Camada Conv2D de 64 filtros 3×3 e ativação ReLU, junto a uma camada MaxPooling2D 2×2, reduzindo para 7×7.
+```python
+layers.Conv2D(64, (3, 3), activation='relu'),
+layers.MaxPooling2D((2, 2)),
+```
+
+#### Terceiro bloco convolucional
+
+Camada Conv2D de 128 filtros 3×3 e ativação ReLU.
+```python
+ layers.Conv2D(128, (3, 3), activation='relu'),
+```
+
+#### Classificação
+
+Uma camada Flatten que tranforma em um vetor unidimensional acompanhada de uma camada Dense (totalmente conectada) de 128 neurônios com ativação ReLU. Termina com uma camada de saída: 10 neurônios com softmax, produzindo as probabilidades para as 10 classes (dígitos 0 a 9).
+```python
+ layers.Flatten(),
+layers.Dense(128, activation='relu'),
+layers.Dense(10, activation='softmax')
+```
 
 ### 2️⃣ Bibliotecas Utilizadas
 
 Liste as principais bibliotecas utilizadas no projeto, preferencialmente
 com suas versões.
+
+```txt
+tensorflow=>2.12
+numpy
+```
 
 
 
@@ -337,8 +377,69 @@ Explique qual técnica foi utilizada para otimizar o modelo no arquivo
 
 ### 4️⃣ Resultados Obtidos
 
-Informe o principal resultado obtido após o treinamento do modelo.
+#### 📋 Sumário Executivo
+O modelo de Rede Neural Convolucional (CNN) apresentou **desempenho excepcional**, atingindo **99,06% de acurácia global** no conjunto de teste. As métricas demonstram que o modelo é robusto, com alta capacidade de generalização e baixíssima taxa de erro.
 
+#### 🎯 Matriz de Confusão
+
+A matriz de confusão abaixo mostra a distribuição dos acertos e erros do modelo para cada dígito (0 a 9):
+```markdown
+[[ 973    1    0    0    0    0    3    2    1    0]
+ [   0 1130    1    0    0    1    0    3    0    0]
+ [   1    1 1024    0    0    0    1    5    0    0]
+ [   0    0    1 1005    0    2    0    0    2    0]
+ [   0    1    2    0  967    0    2    1    0    9]
+ [   0    0    0   10    0  875    3    1    2    1]
+ [   1    2    0    0    1    1  953    0    0    0]
+ [   0    2    2    2    0    0    0 1019    0    3]
+ [   1    0    1    1    0    0    1    4  963    3]
+ [   2    0    0    1    4    3    2    0    0  997]]
+```
+
+#### 📈 Métricas por Classe (Dígito)
+
+| Dígito | Precisão | Recall | Especificidade | F1-score | Acurácia |
+|:------:|---------:|-------:|---------------:|---------:|---------:|
+| **0**  | 0.9949   | 0.9929 | 0.9994         | 0.9939   | 0.9988   |
+| **1**  | 0.9938   | 0.9956 | 0.9992         | 0.9947   | 0.9988   |
+| **2**  | 0.9932   | 0.9922 | 0.9992         | 0.9927   | 0.9985   |
+| **3**  | 0.9863   | 0.9950 | 0.9984         | 0.9906   | 0.9981   |
+| **4**  | 0.9949   | 0.9847 | 0.9994         | 0.9898   | 0.9980   |
+| **5**  | 0.9921   | 0.9809 | 0.9992         | 0.9865   | 0.9976   |
+| **6**  | 0.9876   | 0.9948 | 0.9987         | 0.9912   | 0.9983   |
+| **7**  | 0.9845   | 0.9912 | 0.9982         | 0.9879   | 0.9975   |
+| **8**  | 0.9948   | 0.9887 | 0.9994         | 0.9918   | 0.9984   |
+| **9**  | 0.9842   | 0.9881 | 0.9982         | 0.9862   | 0.9972   |
+
+#### 📊 Métricas Agregadas
+
+| Métrica | Valor |
+|---------|-------|
+| **Loss (Função de Perda)** | 0.0305 |
+| **Acurácia Global** | **99.06%** |
+| **Precisão Média (Macro)** | 99.06% |
+| **Recall Médio (Macro)** | 99.04% |
+| **Especificidade Média** | 99.90% |
+| **F1-score Médio** | 99.05% |
+
+#### 🔍 Análise dos Erros
+
+##### Principais Confusões Observadas
+
+| Confusão | Ocorrências | Possível Causa |
+|----------|-------------|----------------|
+| **3 → 5** | 10 | Traços semelhantes entre os dígitos |
+| **4 → 9** | 9 | Formas curvas parecidas |
+| **9 → 4** | 4 | Mesma causa que acima |
+| **7 → 2 / 7 → 3** | 2 / 2 | Variações na escrita do 7 |
+| **5 → 3** | 10 | Simetria parcial entre os dígitos |
+
+##### Destaques de Desempenho
+
+- ✅ **Melhor classe:** Dígito **1** (F1-score: 0.9947)
+- ✅ **Maior acurácia:** Dígitos **0 e 1** (99.88%)
+- ⚠️ **Classe com menor recall:** Dígito **5** (98.09%)
+- ⚠️ **Classe com menor precisão:** Dígito **7** (98.45%)
 
 
 ### 5️⃣ Comentários Adicionais (Opcional)
