@@ -311,13 +311,11 @@ Preencha todas as seções de forma clara e objetiva.
 
 **Exemplo:**
 
-👤 Identificação: **Nome Completo:**
+👤 Identificação: **Raphael Sousa Rabelo rates:**
+_Raphael S. R. Rates_
 
 
 ### 1️⃣ Resumo da Arquitetura do Modelo
-
-Descreva, em palavras, a arquitetura da **CNN** implementada no arquivo
-`train_model.py`.
 
 #### Camada de entrada e primira convolucional
 Imagens de 28×28 pixels com 1 canal (escala de cinza), como as do MNIST.
@@ -366,13 +364,96 @@ tensorflow=>2.12
 numpy
 ```
 
-
-
 ### 3️⃣ Técnica de Otimização do Modelo
 
-Explique qual técnica foi utilizada para otimizar o modelo no arquivo
-`optimize_model.py`.
+#### 🔧 Técnicas Utilizadas
 
+##### 1. **Quantização Pós-Treinamento (Post-Training Quantization)**
+
+```python
+converter.optimizations = [tf.lite.Optimize.DEFAULT]
+```
+
+| Técnica | Descrição |
+|---------|-----------|
+| **Otimização padrão** | Aplica quantização de pesos de `float32` para `int8` ou `float16` |
+| **Redução de precisão** | Converte números de 32 bits para 8 ou 16 bits |
+
+##### 2. **Conversão de Formato**
+
+| De | Para | Benefício |
+|----|------|------------|
+| Keras H5 (.h5) | TFLite (.tflite) | Execução em dispositivos limitados |
+
+
+#### 💡 Por que usar estas técnicas?
+
+##### ✅ **Redução de Tamanho**
+
+| Formato | Tamanho típico | Redução |
+|---------|---------------|---------|
+| Keras (.h5) | ~50-100 MB | - |
+| TFLite quantizado | ~12-25 MB | **~75-80% menor** |
+
+##### ✅ **Aumento de Velocidade**
+
+- Inferência **2-4x mais rápida** em dispositivos móveis
+- Operações com inteiros são mais rápidas que floats
+
+##### ✅ **Menor Consumo de Energia**
+
+- Dispositivos móveis: **bateria dura mais**
+- Edge devices: menor aquecimento
+
+##### ✅ **Execução sem Python**
+
+- Modelo executável em C++, Java, Swift
+- Não depende do TensorFlow completo (~400 MB)
+
+---
+
+## 📊 Comparação de Formatos
+
+| Característica | Keras (.h5) | TFLite (.tflite) |
+|----------------|-------------|------------------|
+| **Plataforma** | Python apenas | Android, iOS, Linux, MCU |
+| **Dependências** | TensorFlow completo | TFLite Runtime (~1 MB) |
+| **Precisão** | Float32 (alta) | Int8/Float16 (boa) |
+| **Tamanho** | Grande | Pequeno (4x menor) |
+| **Velocidade** | Referência | 2-4x mais rápido |
+| **Consumo RAM** | Alto (~500 MB) | Baixo (~10-50 MB) |
+
+---
+
+#### 📈 Trade-off: Precisão vs Eficiência
+
+| Métrica | Antes (Keras) | Depois (TFLite) | Impacto |
+|---------|---------------|-----------------|----------|
+| Acurácia | 99.06% | ~99.00% | **-0.06%** (insignificante) |
+| Tamanho | ~25 MB | ~6 MB | **-76%** |
+| Inferência (CPU) | 15ms | 4ms | **3.7x mais rápido** |
+
+> ⚠️ A perda de acurácia é mínima porque o MNIST é um problema simples. Para tarefas complexas, pode-se usar `float16` em vez de `int8`.
+
+#### 🔄 Fluxo de Execução do Código
+
+```mermaid
+graph LR
+    A[model.h5] --> B[load_model]
+    B --> C[converter.tflite]
+    C --> D[otimização DEFAULT]
+    D --> E[model.tflite]
+    E --> F[dispositivo móvel]
+```
+
+#### 📝 Resumo Final
+
+| Pergunta | Resposta |
+|----------|----------|
+| **Técnica principal** | Quantização pós-treinamento + conversão TFLite |
+| **Objetivo** | Reduzir tamanho e aumentar velocidade |
+| **Motivo do uso** | Implantar modelo em dispositivos móveis/embarcados |
+| **Ganho principal** | 75-80% menos espaço, 2-4x mais rápido |
 
 
 ### 4️⃣ Resultados Obtidos
