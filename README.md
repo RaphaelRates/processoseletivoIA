@@ -300,19 +300,9 @@ Copie o link do seu repositório e envie conforme orientações do processo sele
 
 ## 📝 Relatório do Candidato
 
-O arquivo (`README.md`) deve ser utilizado como **relatório final do desafio**.
-
-Preencha todas as seções de forma clara e objetiva.
-
-> 💡 Dica: não é necessário um relatório extenso.  
-> O mais importante é demonstrar **clareza nas decisões técnicas**.
-
-
-
-**Exemplo:**
-
 👤 Identificação: **Raphael Sousa Rabelo rates:**
 _Raphael S. R. Rates_
+Universidade: UFCA (Universidade Federal do Cariri
 
 
 ### 1️⃣ Resumo da Arquitetura do Modelo
@@ -361,7 +351,7 @@ com suas versões.
 
 ```txt
 tensorflow=>2.12
-numpy
+numpy=2.0
 ```
 
 ### 3️⃣ Técnica de Otimização do Modelo
