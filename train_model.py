@@ -1,3 +1,6 @@
+import os
+import random
+import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -45,7 +48,8 @@ class LetterVision:
             x_train, y_train,
             epochs=5,
             batch_size=64,
-            validation_split=0.1
+            validation_split=0.1,
+            shuffle=True
         )
 
     def evaluate(self, x_test, y_test):
@@ -103,7 +107,7 @@ def main():
     lv.evaluate(x_test, y_test)
 
     lv.model.save("model.h5")
-    print("\nModelo salvo como model.keras")
+    print("\nModelo salvo como model.h5")
 
 if __name__ == "__main__":
     main()
