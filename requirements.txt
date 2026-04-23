@@ -1,2 +1,5 @@
 tensorflow>=2.12
 numpy
+lime
+scikit-image
+matplotlib

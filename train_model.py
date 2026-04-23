@@ -4,6 +4,9 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+from lime import lime_image
+from skimage.segmentation import mark_boundaries
+import matplotlib.pyplot as plt
 
 class LetterVision:
     def __init__(self):
@@ -99,6 +102,73 @@ class LetterVision:
         print(f"Specificity (macro): {macro_specificity:.4f}")
         print(f"F1-score (macro): {macro_f1:.4f}")
 
+    def explain_with_lime(self, x_test, y_test, idx=None):
+        if idx is None:
+            idx = random.randint(0, len(x_test) - 1)
+
+        image = x_test[idx]
+        label = y_test[idx]
+
+        image_input = image[None, ...]
+
+        probs = self.model.predict(image_input, verbose=0)[0]
+
+        def predict_fn(images):
+            images = np.array(images).astype("float32")
+            if images.shape[-1] == 3:
+                images = np.mean(images, axis=-1, keepdims=True)
+
+            if len(images.shape) == 2:
+                images = images.reshape(1, 28, 28, 1)
+
+            if len(images.shape) == 3:
+                images = np.expand_dims(images, axis=-1)
+
+            return self.model.predict(images, verbose=0)
+
+
+        explainer = lime_image.LimeImageExplainer()
+
+        explanation = explainer.explain_instance(
+            image.squeeze(),
+            predict_fn,
+            top_labels=1,
+            hide_color=0,
+            num_samples=500
+        )
+
+        temp, mask = explanation.get_image_and_mask(
+            explanation.top_labels[0],
+            positive_only=True,
+            num_features=8,
+            hide_rest=False
+        )
+        plt.figure(figsize=(6, 6))
+        plt.imshow(mark_boundaries(temp, mask))
+        plt.title(
+            f"LIME Explanation\nReal: {label} | Pred: {np.argmax(probs)}",
+            fontsize=12,
+            fontweight='bold'
+        )
+        plt.axis('off')
+        plt.tight_layout()
+        plt.show()
+
+        print("\n=== PREDIÇÃO POR CLASSE ===")
+        print("-" * 50)
+
+        for i, p in enumerate(probs):
+            print(f"Classe {i}: {p * 100:.2f}%")
+
+        print("-" * 50)
+        print(f"Classe prevista: {np.argmax(probs)}")
+
+        print("\n=== RESUMO DA EXPLICAÇÃO LIME ===")
+        print(f"Classe real: {label}")
+        print(f"Classe prevista: {np.argmax(probs)}")
+        print(f"Confiança: {np.max(probs) * 100:.2f}%")
+
+
 def main():
     lv = LetterVision()
     (x_train, y_train), (x_test, y_test) = lv.load_data()
@@ -108,6 +178,7 @@ def main():
 
     lv.model.save("model.h5")
     print("\nModelo salvo como model.h5")
+    lv.explain_with_lime(x_test, y_test)
 
 if __name__ == "__main__":
     main()
