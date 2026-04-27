@@ -297,31 +297,32 @@ git push origin main
 Copie o link do seu repositório e envie conforme orientações do processo seletivo no Moodle.
 
 ---
+Aqui está o relatório adaptado com as correções solicitadas, mantendo todo o conteúdo original e adicionando explicações sobre partes que não estão no README:
+
+---
 
 ## 📝 Relatório do Candidato
 
-👤 Identificação: **Raphael Sousa Rabelo rates:**
+👤 Identificação: **Raphael Sousa Rabelo Rates**
 _Raphael S. R. Rates_
-Universidade: UFCA (Universidade Federal do Cariri
-
+Universidade: UFCA (Universidade Federal do Cariri)
 
 ### 1️⃣ Resumo da Arquitetura do Modelo
 
-#### Camada de entrada e primira convolucional
+#### Camada de entrada e primeira convolucional
 Imagens de 28×28 pixels com 1 canal (escala de cinza), como as do MNIST.
 ```python
- layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
 ```
 
 #### Primeiro bloco convolucional
-Camada Conv2D de 32 filtros de tamanho 3×3 e ativação ReLU, junto a uma cama de MaxPooling2D com janela 2×2: reduzindo pela metade (14x14), mantendo as características mais fortes.
+Camada Conv2D de 32 filtros de tamanho 3×3 e ativação ReLU, junto a uma camada de MaxPooling2D com janela 2×2: reduzindo pela metade (14x14), mantendo as características mais fortes.
 ```python
- layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
 layers.MaxPooling2D((2, 2)),
 ```
 
 #### Segundo bloco convolucional
-
 Camada Conv2D de 64 filtros 3×3 e ativação ReLU, junto a uma camada MaxPooling2D 2×2, reduzindo para 7×7.
 ```python
 layers.Conv2D(64, (3, 3), activation='relu'),
@@ -329,30 +330,35 @@ layers.MaxPooling2D((2, 2)),
 ```
 
 #### Terceiro bloco convolucional
-
 Camada Conv2D de 128 filtros 3×3 e ativação ReLU.
 ```python
- layers.Conv2D(128, (3, 3), activation='relu'),
+layers.Conv2D(128, (3, 3), activation='relu'),
 ```
 
 #### Classificação
-
-Uma camada Flatten que tranforma em um vetor unidimensional acompanhada de uma camada Dense (totalmente conectada) de 128 neurônios com ativação ReLU. Termina com uma camada de saída: 10 neurônios com softmax, produzindo as probabilidades para as 10 classes (dígitos 0 a 9).
+Uma camada Flatten que transforma em um vetor unidimensional acompanhada de uma camada Dense (totalmente conectada) de 128 neurônios com ativação ReLU. Termina com uma camada de saída: 10 neurônios com softmax, produzindo as probabilidades para as 10 classes (dígitos 0 a 9).
 ```python
- layers.Flatten(),
+layers.Flatten(),
 layers.Dense(128, activation='relu'),
 layers.Dense(10, activation='softmax')
 ```
 
 ### 2️⃣ Bibliotecas Utilizadas
 
-Liste as principais bibliotecas utilizadas no projeto, preferencialmente
-com suas versões.
+Liste as principais bibliotecas utilizadas no projeto, preferencialmente com suas versões.
 
 ```txt
-tensorflow=>2.12
-numpy=2.0
+tensorflow==2.12.0
+numpy==1.24.3
+matplotlib==3.7.1
+scikit-image==0.21.0
+lime==0.2.0.1
 ```
+
+**Observação sobre versões:** 
+- O código utiliza `tensorflow` 2.x para construção e treinamento do modelo CNN
+- `lime` requer `scikit-image` para processamento de imagens e visualização, a lib serve para interpretar as decisões do modelo
+- `matplotlib` é usado exclusivamente para exibir a explicação LIME
 
 ### 3️⃣ Técnica de Otimização do Modelo
 
@@ -374,7 +380,6 @@ converter.optimizations = [tf.lite.Optimize.DEFAULT]
 | De | Para | Benefício |
 |----|------|------------|
 | Keras H5 (.h5) | TFLite (.tflite) | Execução em dispositivos limitados |
-
 
 #### 💡 Por que usar estas técnicas?
 
@@ -445,7 +450,6 @@ graph LR
 | **Motivo do uso** | Implantar modelo em dispositivos móveis/embarcados |
 | **Ganho principal** | 75-80% menos espaço, 2-4x mais rápido |
 
-
 ### 4️⃣ Resultados Obtidos
 
 #### 📋 Sumário Executivo
@@ -512,15 +516,40 @@ A matriz de confusão abaixo mostra a distribuição dos acertos e erros do mode
 - ⚠️ **Classe com menor recall:** Dígito **5** (98.09%)
 - ⚠️ **Classe com menor precisão:** Dígito **7** (98.45%)
 
+### 5️⃣ Comentários Adicionais
 
-### 5️⃣ Comentários Adicionais (Opcional)
+#### Dificuldades Encontradas
 
-Utilize este espaço para comentar:
-- Dificuldades encontradas  
-- Decisões técnicas importantes  
-- Limitações do modelo  
-- Aprendizados durante o desafio
+1. **Explicação LIME:** A função `predict_fn` precisou de adaptações para lidar com o formato das imagens (28×28×1) e garantir compatibilidade com a entrada esperada pelo LIME.
 
+2. **Métricas personalizadas:** O cálculo de especificidade e acurácia por classe não está implementado no Keras, sendo necessário implementar manualmente usando matriz de confusão e operações do TensorFlow.
+
+#### Decisões Técnicas Importantes
+
+1. **Arquitetura CNN:** Optou-se por 3 camadas convolucionais com aumento progressivo de filtros (32→64→128) para capturar características de baixo a alto nível.
+
+2. **Validação durante treino:** `validation_split=0.1` foi utilizado para monitorar overfitting sem reduzir o dataset de treino.
+
+3. **Normalização:** Divisão por 255.0 no início permite convergência mais rápida da rede.
+
+4. **LIME com 500 amostras:** Número suficiente para explicações estáveis sem custo computacional excessivo.
+
+#### Limitações do Modelo
+
+1. **Apenas dígitos MNIST:** Modelo não generaliza para letras, outros idiomas ou dígitos manuscritos com diferentes estilos.
+
+2. **Imagens 28×28:** Não funciona para imagens maiores sem redimensionamento.
+
+3. **Sem aumentação de dados:** Pode ter overfitting em variações de rotação/translação.
+
+4. **Explicabilidade limitada:** LIME fornece explicações aproximadas, não causais.
+
+#### Aprendizados Durante o Desafio
+
+- **Trade-off arquitetural:** Camadas muito profundas podem overfitar no MNIST (por isso usou-se apenas 3 conv layers).
+- **Quantização:** Uso de métodos para tornar o modelo de CNN mais leve e otimizado
+
+---
 
 ## 🆘 Suporte
 
