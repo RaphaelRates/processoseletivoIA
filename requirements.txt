@@ -3,3 +3,5 @@ numpy
 lime
 scikit-image
 matplotlib
+scikit-learn>=1.3
+optuna>=3.5
