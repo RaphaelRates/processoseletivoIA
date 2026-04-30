@@ -36,11 +36,11 @@ class LetterVision:
 
         return (x_train, y_train), (x_test, y_test)
 
-    def data_augmentation(self, rotation=0.1, zoom=0.1, translation=0.1):
+    def data_augmentation(self, rotation=0.1, zoom=0.1, translation=0.1, seed=42):
         return keras.Sequential([
-            layers.RandomRotation(rotation),
-            layers.RandomZoom(zoom),
-            layers.RandomTranslation(translation, translation)
+            layers.RandomRotation(rotation, seed=seed),
+            layers.RandomZoom(zoom, seed=seed),
+            layers.RandomTranslation(translation, translation, seed=seed)
         ])
 
     def build_model(self):
@@ -88,8 +88,10 @@ class LetterVision:
             shuffle=True
         )
 
-    def set_seed(self, seed=42):
+    def set_seed(self, seed=42, tf="1"):
         os.environ["PYTHONHASHSEED"] = str(seed)
+        os.environ["TF_DETERMINISTIC_OPS"] = str(tf)
+        os.environ["TF_CUDNN_DETERMINISTIC"] = str(tf)
         random.seed(seed)
         np.random.seed(seed)
         tf.random.set_seed(seed)
