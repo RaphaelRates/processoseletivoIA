@@ -352,6 +352,7 @@ tensorflow==2.12.0
 numpy==1.24.3
 matplotlib==3.7.1
 scikit-image==0.21.0
+scikit-learn>=1.3
 lime==0.2.0.1
 ```
 
@@ -360,9 +361,9 @@ lime==0.2.0.1
 - `lime` requer `scikit-image` para processamento de imagens e visualização, a lib serve para interpretar as decisões do modelo
 - `matplotlib` é usado exclusivamente para exibir a explicação LIME
 
-### 3️⃣ Técnica de Otimização do Modelo
+### 3️⃣ Técnica Utilizadas no Modelo
 
-#### 🔧 Técnicas Utilizadas
+#### 🔧 Técnicas de Otimização
 
 ##### 1. **Quantização Pós-Treinamento (Post-Training Quantization)**
 
@@ -380,6 +381,116 @@ converter.optimizations = [tf.lite.Optimize.DEFAULT]
 | De | Para | Benefício |
 |----|------|------------|
 | Keras H5 (.h5) | TFLite (.tflite) | Execução em dispositivos limitados |
+
+Aqui vai direto ao ponto, pronto pra colar no teu relatório 👇
+
+---
+
+#### 🔄 Data Augmentation (Aumentação de Dados)
+
+Para aumentar a capacidade de generalização do modelo e reduzir overfitting, foi utilizada **data augmentation on-the-fly** diretamente na arquitetura da rede.
+
+```python
+layers.RandomRotation(0.1),
+layers.RandomZoom(0.1),
+layers.RandomTranslation(0.1, 0.1)
+```
+
+##### 📌 Transformações Aplicadas
+
+| Técnica               | Descrição                    | Benefício                            |
+| --------------------- | ---------------------------- | ------------------------------------ |
+| **Rotação aleatória** | Rotaciona levemente a imagem | Torna o modelo robusto a inclinações |
+| **Zoom aleatório**    | Aproxima ou afasta a imagem  | Aprende variações de escala          |
+| **Translação**        | Move a imagem no eixo X/Y    | Reduz sensibilidade à posição        |
+
+##### 💡 Características Importantes
+
+* Aplicado **durante o treinamento** (não aumenta fisicamente o dataset)
+* Executado **em tempo real (on-the-fly)**
+* Implementado como parte do modelo (Keras Layers)
+* Não afeta o conjunto de teste
+
+##### 🎯 Impacto
+
+* Redução de overfitting
+* Melhor generalização
+* Simula um dataset maior sem custo de armazenamento
+
+
+#### ⏹️ Early Stopping (Parada Antecipada)
+
+Para evitar overfitting e reduzir tempo de treinamento, foi utilizado o mecanismo de **Early Stopping**.
+
+```python
+EarlyStopping(patience=3, restore_best_weights=True)
+```
+
+##### ⚙️ Funcionamento
+
+* Monitora a métrica de validação durante o treino
+* Interrompe o treinamento se não houver melhora após **3 épocas consecutivas**
+* Restaura automaticamente os **melhores pesos encontrados**
+
+##### 📌 Parâmetros Utilizados
+
+| Parâmetro              | Valor | Descrição                                   |
+| ---------------------- | ----- | ------------------------------------------- |
+| `patience`             | 3     | Número de épocas sem melhora antes de parar |
+| `restore_best_weights` | True  | Recupera os melhores pesos                  |
+
+##### 🎯 Benefícios
+
+* Evita overfitting
+* Reduz custo computacional
+* Garante melhor desempenho final
+
+
+#### 💾 Model Checkpoint (Salvamento do Melhor Modelo)
+
+Para garantir que o melhor modelo seja preservado, foi utilizado **ModelCheckpoint**.
+
+```python
+ModelCheckpoint("model.h5", save_best_only=True)
+```
+
+##### ⚙️ Funcionamento
+
+* Salva o modelo automaticamente durante o treinamento
+* Apenas o **melhor modelo (menor loss de validação)** é armazenado
+
+##### 🎯 Benefícios
+
+* Evita perda de modelos bons
+* Permite recuperação do melhor desempenho
+* Essencial para experimentação
+
+#### 🎲 Controle de Aleatoriedade (Reprodutibilidade)
+
+Para garantir consistência nos resultados, foi definido um **seed fixo**:
+
+```python
+self.set_seed(42)
+```
+
+##### 🎯 Benefícios
+
+* Resultados reproduzíveis
+* Comparação justa entre experimentos
+* Essencial em contexto científico
+
+
+#### 📊 Métricas Avançadas de Avaliação
+
+Além das métricas tradicionais, foram utilizadas métricas mais robustas:
+
+| Métrica                     | Descrição                                          |
+| --------------------------- | -------------------------------------------------- |
+| **Cohen’s Kappa**           | Mede concordância real vs predita                  |
+| **MCC (Matthews Corrcoef)** | Avaliação robusta mesmo com classes desbalanceadas |
+| **ROC-AUC (OvR)**           | Mede separabilidade entre classes                  |
+| **Specificity**             | Taxa de verdadeiros negativos                      |
+
 
 #### 💡 Por que usar estas técnicas?
 
@@ -399,11 +510,6 @@ converter.optimizations = [tf.lite.Optimize.DEFAULT]
 
 - Dispositivos móveis: **bateria dura mais**
 - Edge devices: menor aquecimento
-
-##### ✅ **Execução sem Python**
-
-- Modelo executável em C++, Java, Swift
-- Não depende do TensorFlow completo (~400 MB)
 
 ---
 
