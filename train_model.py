@@ -4,14 +4,21 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from sklearn.decomposition import PCA
-from sklearn.linear_model import Lasso
-from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from lime import lime_image
 from skimage.segmentation import mark_boundaries
 import matplotlib.pyplot as plt
-import optuna
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    confusion_matrix,
+    classification_report,
+    roc_auc_score,
+    cohen_kappa_score,
+    matthews_corrcoef
+)
 
 
 class LetterVision:
@@ -60,42 +67,6 @@ class LetterVision:
 
         return model
 
-    def build_model_with_params(self, trial):
-        lr = trial.suggest_float("lr", 1e-4, 1e-2, log=True)
-
-        rotation = trial.suggest_float("rotation", 0.0, 0.2)
-        zoom = trial.suggest_float("zoom", 0.0, 0.2)
-        translation = trial.suggest_float("translation", 0.0, 0.2)
-
-        filters1 = trial.suggest_categorical("filters1", [32, 64])
-        filters2 = trial.suggest_categorical("filters2", [64, 128])
-        dense_units = trial.suggest_categorical("dense", [64, 128, 256])
-
-        data_aug = self.data_augmentation(rotation, zoom, translation)
-
-        model = keras.Sequential([
-            layers.Input(shape=(28, 28, 1)),
-            data_aug,
-
-            layers.Conv2D(filters1, (3, 3), activation='relu'),
-            layers.MaxPooling2D((2, 2)),
-
-            layers.Conv2D(filters2, (3, 3), activation='relu'),
-            layers.MaxPooling2D((2, 2)),
-
-            layers.Flatten(),
-            layers.Dense(dense_units, activation='relu'),
-            layers.Dense(10, activation='softmax')
-        ])
-
-        model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=lr),
-            loss='sparse_categorical_crossentropy',
-            metrics=['accuracy']
-        )
-
-        return model
-
     def train(self, x_train, y_train, epochs=5, batch_size=64):
         steps_per_epoch = len(x_train) // batch_size
         total_visto = steps_per_epoch * batch_size * epochs
@@ -117,19 +88,6 @@ class LetterVision:
             shuffle=True
         )
 
-    def objective(self, trial, x_train, y_train):
-        model = self.build_model_with_params(trial)
-
-        history = model.fit(
-            x_train, y_train,
-            epochs=3, 
-            batch_size=32,
-            validation_split=0.1,
-            verbose=0
-        )
-
-        return max(history.history['val_accuracy'])
-
     def set_seed(self, seed=42):
         os.environ["PYTHONHASHSEED"] = str(seed)
         random.seed(seed)
@@ -137,34 +95,45 @@ class LetterVision:
         tf.random.set_seed(seed)
 
     def evaluate(self, x_test, y_test):
-        test_loss, test_acc = self.model.evaluate(x_test, y_test, verbose=0)
-
         y_pred_probs = self.model.predict(x_test, verbose=0)
-        y_pred = tf.argmax(y_pred_probs, axis=1)
+        y_pred = np.argmax(y_pred_probs, axis=1)
 
-        cm = tf.math.confusion_matrix(y_test, y_pred)
         print("\n=== MATRIZ DE CONFUSÃO ===")
-        print(cm.numpy())
+        cm = confusion_matrix(y_test, y_pred)
+        tn = cm.sum() - (cm.sum(axis=0) + cm.sum(axis=1) - np.diag(cm))
+        fp = cm.sum(axis=0) - np.diag(cm)
 
-        cm = tf.cast(cm, tf.float32)
-
-        tp = tf.linalg.diag_part(cm)
-        fp = tf.reduce_sum(cm, axis=0) - tp
-        fn = tf.reduce_sum(cm, axis=1) - tp
-        tn = tf.reduce_sum(cm) - (tp + fp + fn)
-
-        precision = tp / (tp + fp + 1e-7)
-        recall    = tp / (tp + fn + 1e-7)
         specificity = tn / (tn + fp + 1e-7)
-        f1_score  = 2 * precision * recall / (precision + recall + 1e-7)
+        print(cm)
 
         print("\n=== MÉTRICAS GERAIS ===")
 
-        print(f"Acurácia            : \033[92m{test_acc:.4f}\033[0m")
-        print(f"Precision (macro)   : \033[96m{tf.reduce_mean(precision):.4f}\033[0m")
-        print(f"Recall (macro)      : \033[93m{tf.reduce_mean(recall):.4f}\033[0m")
-        print(f"Specificity (macro) : \033[95m{tf.reduce_mean(specificity):.4f}\033[0m")
-        print(f"F1-score (macro)    : \033[91m{tf.reduce_mean(f1_score):.4f}\033[0m")
+        acc = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred, average='macro')
+        recall = recall_score(y_test, y_pred, average='macro')
+        f1 = f1_score(y_test, y_pred, average='macro')
+
+        kappa = cohen_kappa_score(y_test, y_pred)
+        mcc = matthews_corrcoef(y_test, y_pred)
+
+        try:
+            roc_auc = roc_auc_score(y_test, y_pred_probs, multi_class='ovr')
+        except:
+            roc_auc = None
+
+        print(f"Acurácia            : \033[92m{acc:.4f}\033[0m")
+        print(f"Precision (macro)   : \033[96m{precision:.4f}\033[0m")
+        print(f"Recall (macro)      : \033[93m{recall:.4f}\033[0m")
+        print(f"F1-score (macro)    : \033[91m{f1:.4f}\033[0m")
+        print(f"Cohen Kappa         : \033[95m{kappa:.4f}\033[0m")
+        print(f"Matthews Corrcoef   : \033[94m{mcc:.4f}\033[0m")
+        print(f"Specificity (macro) : \033[95m{np.mean(specificity):.4f}\033[0m")
+
+        if roc_auc is not None:
+            print(f"ROC-AUC (OvR)       : \033[92m{roc_auc:.4f}\033[0m")
+
+        print("\n=== RELATÓRIO COMPLETO ===")
+        print(classification_report(y_test, y_pred))
 
 
     def explain_with_lime(self, x_test, y_test):
@@ -239,27 +208,7 @@ def main():
     lv.set_seed(42)
     (x_train, y_train), (x_test, y_test) = lv.load_data()
 
-    print("\n=== OTIMIZAÇÃO COM OPTUNA ===")
-
-    study = optuna.create_study(
-        study_name="mnist_fast",
-        direction="maximize",
-        sampler=optuna.samplers.RandomSampler(seed=42),
-        pruner=optuna.pruners.MedianPruner(
-            n_startup_trials=1,
-            n_warmup_steps=2,
-            interval_steps=1
-        ),
-    )
-
-    study.optimize(
-        lambda trial: lv.objective(trial, x_train, y_train),
-        n_trials=10
-    )
-
-    print("Melhores parâmetros:", study.best_params)
-
-    lv.model = lv.build_model_with_params(study.best_trial)
+    lv.model = lv.build_model()
 
     lv.train(x_train, y_train)
     lv.evaluate(x_test, y_test)
