@@ -88,13 +88,15 @@ class LetterVision:
             shuffle=True
         )
 
-    def set_seed(self, seed=42, tf="1"):
+    def set_seed(self, seed=42, deterministic=True):
         os.environ["PYTHONHASHSEED"] = str(seed)
-        os.environ["TF_DETERMINISTIC_OPS"] = str(tf)
-        os.environ["TF_CUDNN_DETERMINISTIC"] = str(tf)
+        os.environ["TF_DETERMINISTIC_OPS"] = "1" if deterministic else "0"
+        os.environ["TF_CUDNN_DETERMINISTIC"] = "1" if deterministic else "0"
+
         random.seed(seed)
         np.random.seed(seed)
         tf.random.set_seed(seed)
+        tf.keras.utils.set_random_seed(seed)
 
     def evaluate(self, x_test, y_test):
         y_pred_probs = self.model.predict(x_test, verbose=0)
