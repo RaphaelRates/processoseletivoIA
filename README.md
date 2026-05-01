@@ -354,7 +354,27 @@ matplotlib==3.7.1
 scikit-image==0.21.0
 scikit-learn>=1.3
 lime==0.2.0.1
-```
+````
+
+
+* **TensorFlow (2.12.0)**
+  Framework principal de deep learning utilizado para construção, treinamento e avaliação da rede neural convolucional (CNN).
+
+* **NumPy (1.24.3)**
+  Biblioteca fundamental para computação numérica, utilizada para manipulação eficiente de arrays e operações matemáticas.
+
+* **Matplotlib (3.7.1)**
+  Utilizada para visualização de dados, como exibição de imagens, gráficos e resultados das explicações do modelo.
+
+* **Scikit-Image (0.21.0)**
+  Biblioteca de processamento de imagens, usada para manipulação e visualização de regiões relevantes (ex: `mark_boundaries`).
+
+* **Scikit-Learn (>=1.3)**
+  Fornece métricas de avaliação (accuracy, precision, recall, F1-score, matriz de confusão, etc.) e ferramentas auxiliares para análise de desempenho.
+
+* **LIME (0.2.0.1)**
+  Técnica de interpretabilidade que explica predições do modelo destacando regiões importantes da imagem para a decisão.
+
 
 **Observação sobre versões:** 
 - O código utiliza `tensorflow` 2.x para construção e treinamento do modelo CNN
@@ -565,62 +585,76 @@ O modelo de Rede Neural Convolucional (CNN) apresentou **desempenho excepcional*
 
 A matriz de confusão abaixo mostra a distribuição dos acertos e erros do modelo para cada dígito (0 a 9):
 ```markdown
-[[ 973    1    0    0    0    0    3    2    1    0]
- [   0 1130    1    0    0    1    0    3    0    0]
- [   1    1 1024    0    0    0    1    5    0    0]
- [   0    0    1 1005    0    2    0    0    2    0]
- [   0    1    2    0  967    0    2    1    0    9]
- [   0    0    0   10    0  875    3    1    2    1]
- [   1    2    0    0    1    1  953    0    0    0]
- [   0    2    2    2    0    0    0 1019    0    3]
- [   1    0    1    1    0    0    1    4  963    3]
- [   2    0    0    1    4    3    2    0    0  997]]
+[[ 963    0    1    1    2    0    6    1    6    0]
+ [   0 1058    1    7    9    1   16    4   39    0]
+ [   0    0 1022    5    2    0    0    2    1    0]
+ [   0    0    0 1009    0    0    0    1    0    0]
+ [   0    0    0    0  973    0    0    0    4    5]
+ [   0    0    0   13    0  875    3    0    1    0]
+ [   0    1    0    0    4    4  948    0    1    0]
+ [   0    1    7    6    5    0    0 1006    1    2]
+ [   0    0    3    2    2    1    0    2  962    2]
+ [   0    0    0    3    9    2    0    4    5  986]]
 ```
 
 #### 📈 Métricas por Classe (Dígito)
 
 | Dígito | Precisão | Recall | Especificidade | F1-score | Acurácia |
-|:------:|---------:|-------:|---------------:|---------:|---------:|
-| **0**  | 0.9949   | 0.9929 | 0.9994         | 0.9939   | 0.9988   |
-| **1**  | 0.9938   | 0.9956 | 0.9992         | 0.9947   | 0.9988   |
-| **2**  | 0.9932   | 0.9922 | 0.9992         | 0.9927   | 0.9985   |
-| **3**  | 0.9863   | 0.9950 | 0.9984         | 0.9906   | 0.9981   |
-| **4**  | 0.9949   | 0.9847 | 0.9994         | 0.9898   | 0.9980   |
-| **5**  | 0.9921   | 0.9809 | 0.9992         | 0.9865   | 0.9976   |
-| **6**  | 0.9876   | 0.9948 | 0.9987         | 0.9912   | 0.9983   |
-| **7**  | 0.9845   | 0.9912 | 0.9982         | 0.9879   | 0.9975   |
-| **8**  | 0.9948   | 0.9887 | 0.9994         | 0.9918   | 0.9984   |
-| **9**  | 0.9842   | 0.9881 | 0.9982         | 0.9862   | 0.9972   |
+| :----: | -------: | -----: | -------------: | -------: | -------: |
+|  **0** |  100.00% | 98.27% |        100.00% |   99.13% |   99.83% |
+|  **1** |   99.72% | 93.22% |         99.97% |   96.36% |   99.23% |
+|  **2** |   98.93% | 99.03% |         99.88% |   98.98% |   99.77% |
+|  **3** |   96.65% | 99.90% |         99.63% |   98.25% |   99.58% |
+|  **4** |   97.01% | 99.08% |         99.67% |   98.03% |   99.55% |
+|  **5** |   99.32% | 98.10% |         99.93% |   98.71% |   99.77% |
+|  **6** |   97.53% | 98.96% |         99.74% |   98.24% |   99.57% |
+|  **7** |   98.82% | 97.86% |         99.88% |   98.34% |   99.76% |
+|  **8** |   94.03% | 98.77% |         99.36% |   96.34% |   99.16% |
+|  **9** |   99.30% | 97.72% |         99.92% |   98.50% |   99.74% |
+
 
 #### 📊 Métricas Agregadas
 
-| Métrica | Valor |
-|---------|-------|
-| **Loss (Função de Perda)** | 0.0305 |
-| **Acurácia Global** | **99.06%** |
-| **Precisão Média (Macro)** | 99.06% |
-| **Recall Médio (Macro)** | 99.04% |
-| **Especificidade Média** | 99.90% |
-| **F1-score Médio** | 99.05% |
+| Métrica                     |      Valor |
+| --------------------------- | ---------: |
+| **Acurácia Geral**          | **98.99%** |
+| **F1-score (macro)**        | **98.29%** |
+| **Precision (macro)**       | **98.73%** |
+| **Recall (macro)**          | **98.09%** |
+| **Cohen’s Kappa**           | **98.88%** |
+| **Matthews Corrcoef (MCC)** | **98.88%** |
 
-#### 🔍 Análise dos Erros
 
-##### Principais Confusões Observadas
+Atualizado com base **na sua matriz real** (sem inventar número bonito):
 
-| Confusão | Ocorrências | Possível Causa |
-|----------|-------------|----------------|
-| **3 → 5** | 10 | Traços semelhantes entre os dígitos |
-| **4 → 9** | 9 | Formas curvas parecidas |
-| **9 → 4** | 4 | Mesma causa que acima |
-| **7 → 2 / 7 → 3** | 2 / 2 | Variações na escrita do 7 |
-| **5 → 3** | 10 | Simetria parcial entre os dígitos |
 
-##### Destaques de Desempenho
 
-- ✅ **Melhor classe:** Dígito **1** (F1-score: 0.9947)
-- ✅ **Maior acurácia:** Dígitos **0 e 1** (99.88%)
-- ⚠️ **Classe com menor recall:** Dígito **5** (98.09%)
-- ⚠️ **Classe com menor precisão:** Dígito **7** (98.45%)
+### 🔍 Análise dos Erros
+
+#### 📊 Principais Confusões Observadas
+
+| Confusão          | Ocorrências | Possível Causa                           |
+| ----------------- | ----------: | ---------------------------------------- |
+| **1 → 8**         |          39 | Escrita do “1” com serifas parecendo “8” |
+| **1 → 6**         |          16 | Traço inclinado confundindo estrutura    |
+| **5 → 3**         |          13 | Curvatura semelhante                     |
+| **4 → 9**         |           5 | Formato fechado do topo                  |
+| **9 → 4**         |           9 | Inversão estrutural                      |
+| **8 → 2 / 8 → 3** |       3 / 2 | Ambiguidade visual nas curvas            |
+
+
+#### 🚀 Destaques de Desempenho
+
+* ✅ **Melhor classe (F1-score):** Dígito **0** (~99.13%)
+
+* ✅ **Maior acurácia:** Dígito **0** (~99.83%)
+
+* ⚠️ **Menor recall:** Dígito **1** (~93.22%)
+  → modelo deixa passar vários “1”
+
+* ⚠️ **Menor precisão:** Dígito **8** (~94.03%)
+  → modelo confunde “8” com outros dígitos
+
 
 ### 5️⃣ Comentários Adicionais
 
