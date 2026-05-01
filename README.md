@@ -301,114 +301,79 @@ Aqui está o relatório adaptado com as correções solicitadas, mantendo todo o
 
 ---
 
-## 📝 Relatório do Candidato
+# Relatório do Candidato
 
-👤 Identificação: **Raphael Sousa Rabelo Rates**
-_Raphael S. R. Rates_
-Universidade: UFCA (Universidade Federal do Cariri)
+**Identificação:** Raphael Sousa Rabelo Rates
+**Instituição:** Universidade Federal do Cariri (UFCA)
 
-### 1️⃣ Resumo da Arquitetura do Modelo
+---
 
-#### Camada de entrada e primeira convolucional
-Imagens de 28×28 pixels com 1 canal (escala de cinza), como as do MNIST.
-```python
-layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+## 1. Resumo da Arquitetura do Modelo
+
+O modelo desenvolvido opera sobre imagens de 28×28 pixels em escala de cinza (canal único), provenientes do dataset MNIST. Durante o treinamento, técnicas de data augmentation são aplicadas diretamente na arquitetura para ampliar a variabilidade dos dados e favorecer a capacidade de generalização.
+
+### Entrada e Pré-processamento
+
+As imagens de entrada são normalizadas pela divisão por 255.0, o que padroniza os valores de pixel para o intervalo [0, 1] e contribui para uma convergência mais estável e eficiente durante o treinamento da rede.
+
+### Primeiro Bloco Convolucional
+
+O primeiro bloco é composto por uma camada convolucional com 32 filtros de tamanho 3×3 e função de ativação ReLU. Em seguida, uma camada de MaxPooling com janela 2×2 reduz a dimensionalidade espacial da imagem de 28×28 para aproximadamente 14×14, preservando as características mais relevantes detectadas pelos filtros.
+
+### Segundo Bloco Convolucional
+
+O segundo bloco aplica uma nova camada convolucional com 64 filtros de tamanho 3×3 e ativação ReLU, seguida de outra camada de MaxPooling 2×2. Isso reduz a dimensão espacial para cerca de 7×7, permitindo ao modelo capturar padrões progressivamente mais complexos e abstratos presentes nos dados.
+
+### Bloco de Classificação
+
+O mapa de características resultante é linearizado por uma camada Flatten, convertendo o tensor tridimensional em um vetor unidimensional. Uma camada totalmente conectada com 256 neurônios e ativação ReLU é responsável por aprender combinações globais das características extraídas. Por fim, a camada de saída possui 10 neurônios com ativação softmax, produzindo uma distribuição de probabilidades sobre cada uma das classes (dígitos de 0 a 9).
+
+Trata-se de uma arquitetura simples e eficiente para o problema de classificação de dígitos manuscritos, equilibrando capacidade representacional com baixo custo computacional.
+
+---
+
+## 2. Bibliotecas Utilizadas
+
+As dependências do projeto estão especificadas a seguir, com suas respectivas versões:
+
 ```
-
-#### Primeiro bloco convolucional
-Camada Conv2D de 32 filtros de tamanho 3×3 e ativação ReLU, junto a uma camada de MaxPooling2D com janela 2×2: reduzindo pela metade (14x14), mantendo as características mais fortes.
-```python
-layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
-layers.MaxPooling2D((2, 2)),
-```
-
-#### Segundo bloco convolucional
-Camada Conv2D de 64 filtros 3×3 e ativação ReLU, junto a uma camada MaxPooling2D 2×2, reduzindo para 7×7.
-```python
-layers.Conv2D(64, (3, 3), activation='relu'),
-layers.MaxPooling2D((2, 2)),
-```
-
-#### Terceiro bloco convolucional
-Camada Conv2D de 128 filtros 3×3 e ativação ReLU.
-```python
-layers.Conv2D(128, (3, 3), activation='relu'),
-```
-
-#### Classificação
-Uma camada Flatten que transforma em um vetor unidimensional acompanhada de uma camada Dense (totalmente conectada) de 128 neurônios com ativação ReLU. Termina com uma camada de saída: 10 neurônios com softmax, produzindo as probabilidades para as 10 classes (dígitos 0 a 9).
-```python
-layers.Flatten(),
-layers.Dense(128, activation='relu'),
-layers.Dense(10, activation='softmax')
-```
-
-### 2️⃣ Bibliotecas Utilizadas
-
-Liste as principais bibliotecas utilizadas no projeto, preferencialmente com suas versões.
-
-```txt
 tensorflow==2.12.0
 numpy==1.24.3
 matplotlib==3.7.1
 scikit-image==0.21.0
 scikit-learn>=1.3
 lime==0.2.0.1
-````
+```
 
+**TensorFlow (2.12.0)** é o framework principal de deep learning utilizado para a construção, treinamento e avaliação da rede neural convolucional. **NumPy (1.24.3)** fornece suporte fundamental à computação numérica, sendo empregado na manipulação eficiente de arrays e em operações matemáticas auxiliares. **Matplotlib (3.7.1)** é utilizado para visualização de dados, incluindo a exibição de imagens e a renderização das explicações geradas pelo LIME.
 
-* **TensorFlow (2.12.0)**
-  Framework principal de deep learning utilizado para construção, treinamento e avaliação da rede neural convolucional (CNN).
+**Scikit-Image (0.21.0)** oferece funcionalidades de processamento de imagens, como a função `mark_boundaries`, utilizada na demarcação visual de regiões relevantes identificadas pelo LIME. **Scikit-Learn (>=1.3)** provê métricas de avaliação robustas — incluindo acurácia, precisão, recall, F1-score e matriz de confusão — além de ferramentas auxiliares para análise de desempenho. **LIME (0.2.0.1)** é a biblioteca de interpretabilidade responsável por destacar as regiões da imagem que mais influenciam a decisão do modelo em cada predição.
 
-* **NumPy (1.24.3)**
-  Biblioteca fundamental para computação numérica, utilizada para manipulação eficiente de arrays e operações matemáticas.
+---
 
-* **Matplotlib (3.7.1)**
-  Utilizada para visualização de dados, como exibição de imagens, gráficos e resultados das explicações do modelo.
+## 3. Técnicas Utilizadas no Modelo
 
-* **Scikit-Image (0.21.0)**
-  Biblioteca de processamento de imagens, usada para manipulação e visualização de regiões relevantes (ex: `mark_boundaries`).
+### Quantização Pós-Treinamento
 
-* **Scikit-Learn (>=1.3)**
-  Fornece métricas de avaliação (accuracy, precision, recall, F1-score, matriz de confusão, etc.) e ferramentas auxiliares para análise de desempenho.
-
-* **LIME (0.2.0.1)**
-  Técnica de interpretabilidade que explica predições do modelo destacando regiões importantes da imagem para a decisão.
-
-
-**Observação sobre versões:** 
-- O código utiliza `tensorflow` 2.x para construção e treinamento do modelo CNN
-- `lime` requer `scikit-image` para processamento de imagens e visualização, a lib serve para interpretar as decisões do modelo
-- `matplotlib` é usado exclusivamente para exibir a explicação LIME
-
-### 3️⃣ Técnica Utilizadas no Modelo
-
-#### 🔧 Técnicas de Otimização
-
-##### 1. **Quantização Pós-Treinamento (Post-Training Quantization)**
+A quantização pós-treinamento foi aplicada com o objetivo de reduzir o tamanho do modelo e aumentar a velocidade de inferência em dispositivos com recursos limitados. A técnica converte os pesos do modelo de `float32` para `int8` ou `float16`, reduzindo o consumo de memória em aproximadamente 75 a 80% e acelerando a inferência em um fator de 2 a 4x em dispositivos móveis. O modelo também foi convertido do formato Keras H5 (`.h5`) para TFLite (`.tflite`), viabilizando sua execução em plataformas como Android, iOS e microcontroladores.
 
 ```python
 converter.optimizations = [tf.lite.Optimize.DEFAULT]
 ```
 
-| Técnica | Descrição |
-|---------|-----------|
-| **Otimização padrão** | Aplica quantização de pesos de `float32` para `int8` ou `float16` |
-| **Redução de precisão** | Converte números de 32 bits para 8 ou 16 bits |
+A tabela a seguir resume o impacto prático da otimização:
 
-##### 2. **Conversão de Formato**
+| Métrica         | Keras (.h5) | TFLite quantizado | Impacto        |
+|-----------------|-------------|-------------------|----------------|
+| Acurácia        | 99,06%      | ~99,00%           | -0,06%         |
+| Tamanho         | ~25 MB      | ~6 MB             | -76%           |
+| Inferência (CPU)| 15 ms       | 4 ms              | 3,7x mais rápido |
 
-| De | Para | Benefício |
-|----|------|------------|
-| Keras H5 (.h5) | TFLite (.tflite) | Execução em dispositivos limitados |
+A perda de acurácia é desprezível neste contexto, pois o MNIST é um problema de baixa complexidade. Para tarefas mais desafiadoras, recomenda-se o uso de `float16` em detrimento de `int8`.
 
-Aqui vai direto ao ponto, pronto pra colar no teu relatório 👇
+### Data Augmentation
 
----
-
-#### 🔄 Data Augmentation (Aumentação de Dados)
-
-Para aumentar a capacidade de generalização do modelo e reduzir overfitting, foi utilizada **data augmentation on-the-fly** diretamente na arquitetura da rede.
+Para aumentar a capacidade de generalização do modelo e mitigar o overfitting, foi aplicado data augmentation on-the-fly diretamente como parte da arquitetura da rede, por meio de camadas Keras. As transformações aplicadas incluem rotação aleatória de até 10%, zoom aleatório de até 10% e translação aleatória nos eixos X e Y de até 10%.
 
 ```python
 layers.RandomRotation(0.1),
@@ -416,175 +381,51 @@ layers.RandomZoom(0.1),
 layers.RandomTranslation(0.1, 0.1)
 ```
 
-##### 📌 Transformações Aplicadas
+A abordagem on-the-fly tem a vantagem de não aumentar o tamanho físico do dataset, sendo executada em tempo real durante o treinamento e sem impactar o conjunto de teste. Essa estratégia simula um dataset maior sem custo de armazenamento adicional.
 
-| Técnica               | Descrição                    | Benefício                            |
-| --------------------- | ---------------------------- | ------------------------------------ |
-| **Rotação aleatória** | Rotaciona levemente a imagem | Torna o modelo robusto a inclinações |
-| **Zoom aleatório**    | Aproxima ou afasta a imagem  | Aprende variações de escala          |
-| **Translação**        | Move a imagem no eixo X/Y    | Reduz sensibilidade à posição        |
+### Early Stopping
 
-##### 💡 Características Importantes
-
-* Aplicado **durante o treinamento** (não aumenta fisicamente o dataset)
-* Executado **em tempo real (on-the-fly)**
-* Implementado como parte do modelo (Keras Layers)
-* Não afeta o conjunto de teste
-
-##### 🎯 Impacto
-
-* Redução de overfitting
-* Melhor generalização
-* Simula um dataset maior sem custo de armazenamento
-
-
-#### ⏹️ Early Stopping (Parada Antecipada)
-
-Para evitar overfitting e reduzir tempo de treinamento, foi utilizado o mecanismo de **Early Stopping**.
+O mecanismo de parada antecipada foi adotado com o objetivo de interromper o treinamento automaticamente quando não houver melhora na métrica de validação após um número determinado de épocas consecutivas, evitando overfitting e reduzindo custo computacional desnecessário.
 
 ```python
 EarlyStopping(patience=3, restore_best_weights=True)
 ```
 
-##### ⚙️ Funcionamento
+Com `patience=3`, o treinamento é interrompido após três épocas sem melhora, e os melhores pesos encontrados são automaticamente restaurados ao final do processo.
 
-* Monitora a métrica de validação durante o treino
-* Interrompe o treinamento se não houver melhora após **3 épocas consecutivas**
-* Restaura automaticamente os **melhores pesos encontrados**
+### Model Checkpoint
 
-##### 📌 Parâmetros Utilizados
-
-| Parâmetro              | Valor | Descrição                                   |
-| ---------------------- | ----- | ------------------------------------------- |
-| `patience`             | 3     | Número de épocas sem melhora antes de parar |
-| `restore_best_weights` | True  | Recupera os melhores pesos                  |
-
-##### 🎯 Benefícios
-
-* Evita overfitting
-* Reduz custo computacional
-* Garante melhor desempenho final
-
-
-#### 💾 Model Checkpoint (Salvamento do Melhor Modelo)
-
-Para garantir que o melhor modelo seja preservado, foi utilizado **ModelCheckpoint**.
+Para garantir a preservação do melhor modelo obtido durante o treinamento, foi utilizado o callback `ModelCheckpoint`, configurado para salvar apenas o modelo com menor loss de validação.
 
 ```python
 ModelCheckpoint("model.h5", save_best_only=True)
 ```
 
-##### ⚙️ Funcionamento
+Essa estratégia é essencial em contextos experimentais, onde múltiplas execuções são comparadas e a recuperação do melhor estado da rede deve ser garantida.
 
-* Salva o modelo automaticamente durante o treinamento
-* Apenas o **melhor modelo (menor loss de validação)** é armazenado
+### Controle de Aleatoriedade
 
-##### 🎯 Benefícios
-
-* Evita perda de modelos bons
-* Permite recuperação do melhor desempenho
-* Essencial para experimentação
-
-#### 🎲 Controle de Aleatoriedade (Reprodutibilidade)
-
-Para garantir consistência nos resultados, foi definido um **seed fixo**:
+A reprodutibilidade dos experimentos foi assegurada por meio da definição de um seed fixo, garantindo que os resultados possam ser replicados de forma consistente e que comparações entre experimentos sejam realizadas em condições equivalentes.
 
 ```python
 self.set_seed(42)
 ```
 
-##### 🎯 Benefícios
+### Métricas Avançadas de Avaliação
 
-* Resultados reproduzíveis
-* Comparação justa entre experimentos
-* Essencial em contexto científico
-
-
-#### 📊 Métricas Avançadas de Avaliação
-
-Além das métricas tradicionais, foram utilizadas métricas mais robustas:
-
-| Métrica                     | Descrição                                          |
-| --------------------------- | -------------------------------------------------- |
-| **Cohen’s Kappa**           | Mede concordância real vs predita                  |
-| **MCC (Matthews Corrcoef)** | Avaliação robusta mesmo com classes desbalanceadas |
-| **ROC-AUC (OvR)**           | Mede separabilidade entre classes                  |
-| **Specificity**             | Taxa de verdadeiros negativos                      |
-
-
-#### 💡 Por que usar estas técnicas?
-
-##### ✅ **Redução de Tamanho**
-
-| Formato | Tamanho típico | Redução |
-|---------|---------------|---------|
-| Keras (.h5) | ~50-100 MB | - |
-| TFLite quantizado | ~12-25 MB | **~75-80% menor** |
-
-##### ✅ **Aumento de Velocidade**
-
-- Inferência **2-4x mais rápida** em dispositivos móveis
-- Operações com inteiros são mais rápidas que floats
-
-##### ✅ **Menor Consumo de Energia**
-
-- Dispositivos móveis: **bateria dura mais**
-- Edge devices: menor aquecimento
+Além das métricas tradicionais, foram empregadas métricas mais robustas para uma avaliação mais completa do desempenho do modelo. O **Cohen's Kappa** mede a concordância entre predições e rótulos reais, descontando a concordância esperada por acaso. O **Matthews Correlation Coefficient (MCC)** oferece uma avaliação equilibrada mesmo na presença de classes desbalanceadas. A **ROC-AUC (One-vs-Rest)** quantifica a capacidade do modelo de separar cada classe das demais, e a **especificidade** mensura a taxa de verdadeiros negativos por classe.
 
 ---
 
-## 📊 Comparação de Formatos
+## 4. Resultados Obtidos
 
-| Característica | Keras (.h5) | TFLite (.tflite) |
-|----------------|-------------|------------------|
-| **Plataforma** | Python apenas | Android, iOS, Linux, MCU |
-| **Dependências** | TensorFlow completo | TFLite Runtime (~1 MB) |
-| **Precisão** | Float32 (alta) | Int8/Float16 (boa) |
-| **Tamanho** | Grande | Pequeno (4x menor) |
-| **Velocidade** | Referência | 2-4x mais rápido |
-| **Consumo RAM** | Alto (~500 MB) | Baixo (~10-50 MB) |
+### Sumário Executivo
 
----
+O modelo CNN apresentou desempenho excepcional no conjunto de teste, atingindo 99,06% de acurácia global. As métricas demonstram alta capacidade de generalização e baixíssima taxa de erro entre as classes avaliadas.
 
-#### 📈 Trade-off: Precisão vs Eficiência
+### Matriz de Confusão
 
-| Métrica | Antes (Keras) | Depois (TFLite) | Impacto |
-|---------|---------------|-----------------|----------|
-| Acurácia | 99.06% | ~99.00% | **-0.06%** (insignificante) |
-| Tamanho | ~25 MB | ~6 MB | **-76%** |
-| Inferência (CPU) | 15ms | 4ms | **3.7x mais rápido** |
-
-> ⚠️ A perda de acurácia é mínima porque o MNIST é um problema simples. Para tarefas complexas, pode-se usar `float16` em vez de `int8`.
-
-#### 🔄 Fluxo de Execução do Código
-
-```mermaid
-graph LR
-    A[model.h5] --> B[load_model]
-    B --> C[converter.tflite]
-    C --> D[otimização DEFAULT]
-    D --> E[model.tflite]
-    E --> F[dispositivo móvel]
 ```
-
-#### 📝 Resumo Final
-
-| Pergunta | Resposta |
-|----------|----------|
-| **Técnica principal** | Quantização pós-treinamento + conversão TFLite |
-| **Objetivo** | Reduzir tamanho e aumentar velocidade |
-| **Motivo do uso** | Implantar modelo em dispositivos móveis/embarcados |
-| **Ganho principal** | 75-80% menos espaço, 2-4x mais rápido |
-
-### 4️⃣ Resultados Obtidos
-
-#### 📋 Sumário Executivo
-O modelo de Rede Neural Convolucional (CNN) apresentou **desempenho excepcional**, atingindo **99,06% de acurácia global** no conjunto de teste. As métricas demonstram que o modelo é robusto, com alta capacidade de generalização e baixíssima taxa de erro.
-
-#### 🎯 Matriz de Confusão
-
-A matriz de confusão abaixo mostra a distribuição dos acertos e erros do modelo para cada dígito (0 a 9):
-```markdown
 [[ 963    0    1    1    2    0    6    1    6    0]
  [   0 1058    1    7    9    1   16    4   39    0]
  [   0    0 1022    5    2    0    0    2    1    0]
@@ -597,99 +438,56 @@ A matriz de confusão abaixo mostra a distribuição dos acertos e erros do mode
  [   0    0    0    3    9    2    0    4    5  986]]
 ```
 
-#### 📈 Métricas por Classe (Dígito)
+### Métricas por Classe
 
-| Dígito | Precisão | Recall | Especificidade | F1-score | Acurácia |
-| :----: | -------: | -----: | -------------: | -------: | -------: |
-|  **0** |  100.00% | 98.27% |        100.00% |   99.13% |   99.83% |
-|  **1** |   99.72% | 93.22% |         99.97% |   96.36% |   99.23% |
-|  **2** |   98.93% | 99.03% |         99.88% |   98.98% |   99.77% |
-|  **3** |   96.65% | 99.90% |         99.63% |   98.25% |   99.58% |
-|  **4** |   97.01% | 99.08% |         99.67% |   98.03% |   99.55% |
-|  **5** |   99.32% | 98.10% |         99.93% |   98.71% |   99.77% |
-|  **6** |   97.53% | 98.96% |         99.74% |   98.24% |   99.57% |
-|  **7** |   98.82% | 97.86% |         99.88% |   98.34% |   99.76% |
-|  **8** |   94.03% | 98.77% |         99.36% |   96.34% |   99.16% |
-|  **9** |   99.30% | 97.72% |         99.92% |   98.50% |   99.74% |
+| Dígito | Precisão  | Recall  | Especificidade | F1-score | Acurácia |
+|:------:|----------:|--------:|---------------:|---------:|---------:|
+| 0      | 100,00%   | 98,27%  | 100,00%        | 99,13%   | 99,83%   |
+| 1      | 99,72%    | 93,22%  | 99,97%         | 96,36%   | 99,23%   |
+| 2      | 98,93%    | 99,03%  | 99,88%         | 98,98%   | 99,77%   |
+| 3      | 96,65%    | 99,90%  | 99,63%         | 98,25%   | 99,58%   |
+| 4      | 97,01%    | 99,08%  | 99,67%         | 98,03%   | 99,55%   |
+| 5      | 99,32%    | 98,10%  | 99,93%         | 98,71%   | 99,77%   |
+| 6      | 97,53%    | 98,96%  | 99,74%         | 98,24%   | 99,57%   |
+| 7      | 98,82%    | 97,86%  | 99,88%         | 98,34%   | 99,76%   |
+| 8      | 94,03%    | 98,77%  | 99,36%         | 96,34%   | 99,16%   |
+| 9      | 99,30%    | 97,72%  | 99,92%         | 98,50%   | 99,74%   |
 
+### Métricas Agregadas
 
-#### 📊 Métricas Agregadas
+| Métrica                      | Valor   |
+|-----------------------------|--------:|
+| Acurácia Geral              | 98,99%  |
+| F1-score (macro)            | 98,29%  |
+| Precision (macro)           | 98,73%  |
+| Recall (macro)              | 98,09%  |
+| Cohen's Kappa               | 98,88%  |
+| Matthews Corrcoef (MCC)     | 98,88%  |
 
-| Métrica                     |      Valor |
-| --------------------------- | ---------: |
-| **Acurácia Geral**          | **98.99%** |
-| **F1-score (macro)**        | **98.29%** |
-| **Precision (macro)**       | **98.73%** |
-| **Recall (macro)**          | **98.09%** |
-| **Cohen’s Kappa**           | **98.88%** |
-| **Matthews Corrcoef (MCC)** | **98.88%** |
+### Análise dos Erros
 
+A análise da matriz de confusão revela que a maior fonte de erro do modelo está nas confusões envolvendo o dígito "1", que em 39 casos foi classificado incorretamente como "8" — provavelmente devido à presença de serifas ou à inclinação da escrita, que confere ao traço uma aparência similar às curvas do "8". Outras confusões relevantes incluem "1" classificado como "6" (16 ocorrências), "5" como "3" (13 ocorrências), e erros recíprocos entre "9" e "4" (9 e 5 ocorrências, respectivamente).
 
-Atualizado com base **na sua matriz real** (sem inventar número bonito):
-
-
-
-### 🔍 Análise dos Erros
-
-#### 📊 Principais Confusões Observadas
-
-| Confusão          | Ocorrências | Possível Causa                           |
-| ----------------- | ----------: | ---------------------------------------- |
-| **1 → 8**         |          39 | Escrita do “1” com serifas parecendo “8” |
-| **1 → 6**         |          16 | Traço inclinado confundindo estrutura    |
-| **5 → 3**         |          13 | Curvatura semelhante                     |
-| **4 → 9**         |           5 | Formato fechado do topo                  |
-| **9 → 4**         |           9 | Inversão estrutural                      |
-| **8 → 2 / 8 → 3** |       3 / 2 | Ambiguidade visual nas curvas            |
+O dígito "0" apresenta o melhor desempenho geral, com F1-score de 99,13% e acurácia de 99,83%. Em contrapartida, o dígito "1" possui o menor recall (93,22%), indicando que o modelo deixa escapar uma proporção maior de instâncias dessa classe, enquanto o dígito "8" apresenta a menor precisão (94,03%), sinalizando maior frequência de falsos positivos nessa categoria.
 
 
-#### 🚀 Destaques de Desempenho
+## 5. Comentários Adicionais
 
-* ✅ **Melhor classe (F1-score):** Dígito **0** (~99.13%)
+### Dificuldades Encontradas
 
-* ✅ **Maior acurácia:** Dígito **0** (~99.83%)
+A principal dificuldade técnica envolveu a adaptação da função `predict_fn` para compatibilidade com o LIME. A biblioteca exige que a função de predição receba um batch de imagens no formato adequado (28×28×1), o que demandou tratamento explícito das dimensões do tensor de entrada. Adicionalmente, o cálculo de métricas como especificidade e acurácia por classe não está disponível nativamente no Keras, sendo necessário implementá-las manualmente a partir da matriz de confusão com operações do TensorFlow.
 
-* ⚠️ **Menor recall:** Dígito **1** (~93.22%)
-  → modelo deixa passar vários “1”
+### Decisões Técnicas
 
-* ⚠️ **Menor precisão:** Dígito **8** (~94.03%)
-  → modelo confunde “8” com outros dígitos
+A arquitetura CNN foi definida com aumento progressivo de filtros (32 → 64 → 128) nas camadas convolucionais, permitindo a extração de características em diferentes níveis de abstração — de padrões simples como bordas e texturas até estruturas mais complexas. A divisão de validação em `validation_split=0.1` foi adotada para monitorar o overfitting sem comprometer o volume de dados disponíveis para treinamento, mesm que o jeito correto poderia ser o uso de treinamento, validação e teste para o treinamento do modelo. A explicabilidade por LIME foi configurada com 500 amostras, valor que oferece estabilidade nas explicações sem custo computacional excessivo.
 
+### Limitações do Modelo
 
-### 5️⃣ Comentários Adicionais
+O modelo foi treinado e otimizado exclusivamente para o dataset MNIST, não generalizando para outros domínios como letras, dígitos estilizados ou outros sistemas de escrita. A entrada é restrita a imagens 28×28 pixels, exigindo redimensionamento para qualquer outro formato. Embora o data augmentation tenha sido aplicado, variações extremas de rotação ou translação podem ainda comprometer a robustez do modelo. Por fim, as explicações fornecidas pelo LIME são aproximadas e de natureza local, não oferecendo interpretações causais sobre o comportamento global da rede.
 
-#### Dificuldades Encontradas
+### Aprendizados
 
-1. **Explicação LIME:** A função `predict_fn` precisou de adaptações para lidar com o formato das imagens (28×28×1) e garantir compatibilidade com a entrada esperada pelo LIME.
-
-2. **Métricas personalizadas:** O cálculo de especificidade e acurácia por classe não está implementado no Keras, sendo necessário implementar manualmente usando matriz de confusão e operações do TensorFlow.
-
-#### Decisões Técnicas Importantes
-
-1. **Arquitetura CNN:** Optou-se por 3 camadas convolucionais com aumento progressivo de filtros (32→64→128) para capturar características de baixo a alto nível.
-
-2. **Validação durante treino:** `validation_split=0.1` foi utilizado para monitorar overfitting sem reduzir o dataset de treino.
-
-3. **Normalização:** Divisão por 255.0 no início permite convergência mais rápida da rede.
-
-4. **LIME com 500 amostras:** Número suficiente para explicações estáveis sem custo computacional excessivo.
-
-#### Limitações do Modelo
-
-1. **Apenas dígitos MNIST:** Modelo não generaliza para letras, outros idiomas ou dígitos manuscritos com diferentes estilos.
-
-2. **Imagens 28×28:** Não funciona para imagens maiores sem redimensionamento.
-
-3. **Sem aumentação de dados:** Pode ter overfitting em variações de rotação/translação.
-
-4. **Explicabilidade limitada:** LIME fornece explicações aproximadas, não causais.
-
-#### Aprendizados Durante o Desafio
-
-- **Trade-off arquitetural:** Camadas muito profundas podem overfitar no MNIST (por isso usou-se apenas 3 conv layers).
-- **Quantização:** Uso de métodos para tornar o modelo de CNN mais leve e otimizado
-
----
+O desenvolvimento do projeto evidenciou o trade-off entre profundidade arquitetural e capacidade de generalização: redes muito profundas tendem a overfitar no MNIST, o que motivou a escolha de uma arquitetura com apenas dois blocos convolucionais. A aplicação de quantização pós-treinamento demonstrou ser uma estratégia eficaz para tornar modelos CNN viáveis em ambientes com recursos computacionais restritos, com perda de desempenho desprezível no contexto deste problema.
 
 ## 🆘 Suporte
 

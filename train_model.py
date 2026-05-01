@@ -143,7 +143,7 @@ class LetterVision:
             Classificação:
             - Flatten:
             transforma o mapa de features em vetor 1D.
-            - Dense(128, ReLU):
+            - Dense(256, ReLU):
             aprende combinações globais das features.
             - Dense(10, Softmax):
             gera probabilidades para as classes (0–9).
