@@ -69,6 +69,12 @@ from sklearn.metrics import (
     matthews_corrcoef      # Correlação de Matthews (robusta p/ desbalanceamento)
 )
 
+EPOCHS = 5
+BATCH_SIZE = 64
+SEED = 42
+PATH_MODEL = "model.h5"
+PATIENCE = 3
+VALIDATION_SPLIT = 0.1
 
 class LetterVision:
     def __init__(self):
